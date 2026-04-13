@@ -71,7 +71,7 @@ const authOptions: NextAuthOptions = {
   }
   
   return token;
-}
+},
 
     async session({ session, token }: any) {
       if ("email" in token) {
@@ -93,4 +93,4 @@ const authOptions: NextAuthOptions = {
 
 const handler = NextAuth(authOptions);
 
-export { handler as GET, handler as POST } as any;
+export { handler as GET, handler as POST };
