@@ -40,32 +40,38 @@ const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, account, profile, user }: any) {
-      if (account?.provider === "credentials") {
-        token.email = user.email;
-        token.fullname = user.fullname || user.name;
-        token.role = user.role;
-      }
-      if (account?.provider === "google") {
-        const data = {
-          fullname: user.name,
-          email: user.email,
-          type: "google",
-        };
-
-        await loginWithGoogle(
-          data,
-          (result: { status: boolean; data: any }) => {
-            if (result.status) {
-              token.email = result.data.email;
-              token.fullname = result.data.fullname;
-              token.role = result.data.role;
-            }
-          },
-        );
-      }
-      return token;
-    },
+   async jwt({ token, account, profile, user }: any) {
+  if (account?.provider === "credentials") {
+    token.email = user.email;
+    token.fullname = user.fullname || user.name;
+    token.role = user.role;
+    return token;
+  }
+  
+  if (account?.provider === "google") {
+    const data = {
+      fullname: profile?.name || user.name,
+      email: profile?.email || user.email,
+      type: "google",
+    };
+    
+    const result = await new Promise<{ status: boolean; data: any }>((resolve) => {
+      loginWithGoogle(data, (response) => {
+        resolve(response);
+      });
+    });
+    
+    if (result.status) {
+      token.email = result.data.email;
+      token.fullname = result.data.fullname;
+      token.role = result.data.role;
+    }
+    
+    return token;
+  }
+  
+  return token;
+}
 
     async session({ session, token }: any) {
       if ("email" in token) {
@@ -87,4 +93,4 @@ const authOptions: NextAuthOptions = {
 
 const handler = NextAuth(authOptions);
 
-export { handler as GET, handler as POST };
+export { handler as GET, handler as POST } as any;
