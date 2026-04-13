@@ -9,7 +9,7 @@ import {
 const onlyAdminPage = ["/dashboard"];
 const authPage = ["/login", "/register"];
 
-export default function withAuth(proxy: NextProxy, requireAuth: string[] = []) {
+export default async function withAuth(proxy: NextProxy, requireAuth: string[] = []) {
   return async (req: NextRequest, next: NextFetchEvent) => {
     const pathname = req.nextUrl.pathname;
 

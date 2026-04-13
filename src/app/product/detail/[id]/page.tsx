@@ -5,7 +5,7 @@ import useSWR from "swr";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export default function DetailProductPage(props: any) {
+export default async function DetailProductPage(props: any) {
   const { params } = props;
   // const product = await getData(
   //   `${process.env.NEXT_PUBLIC_API_URL}/api/product/?id=${id}`,
@@ -28,7 +28,7 @@ export default function DetailProductPage(props: any) {
           className="w-full object-cover aspect-square col-span-2"
         />
         <div className="bg-white p-4 px-6">
-          <h3>{product.data?.image}</h3>
+          <h3>{product.data?.name}</h3>
           <p>Price: {product.data?.price}</p>
         </div>
       </div>

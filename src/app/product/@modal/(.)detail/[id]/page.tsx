@@ -11,7 +11,7 @@ const Modal = dynamic(() => import("@/components/core/Modal"));
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function DetailProductPage(props: any) {
-  const { params } = props;
+  const {params } = props;
   // const product = await getData(
   //   `${process.env.NEXT_PUBLIC_API_URL}/api/product/?id=${id}`,
   // );
