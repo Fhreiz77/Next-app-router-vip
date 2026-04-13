@@ -1,0 +1,44 @@
+{
+  "name": "next-app-router",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "jest --passWithNoTests -u",
+    "test:cover": "npm run test -- --coverage",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.2.1",
+    "@types/node": "25.5.0",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "autoprefixer": "10.4.27",
+    "bcrypt": "^6.0.0",
+    "eslint": "9.39.4",
+    "eslint-config-next": "^15.5.13",
+    "firebase": "^12.11.0",
+    "mext": "^0.0.60",
+    "next": "^16.2.1",
+    "next-auth": "^4.24.13",
+    "postcss": "8.5.8",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "swr": "^2.4.1",
+    "tailwindcss": "4.2.1",
+    "typescript": "5.9.3"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/bcrypt": "^6.0.0",
+    "@types/jest": "^30.0.0",
+    "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0",
+    "ts-node": "^10.9.2"
+  }
+}
