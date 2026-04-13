@@ -1,23 +1,24 @@
 import { getToken } from "next-auth/jwt";
-import {
-  NextFetchEvent,
-  NextProxy,
-  NextRequest,
-  NextResponse,
-} from "next/server";
+import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
+
+type NextMiddlewareFunction = (req: NextRequest, next: NextFetchEvent) => any;
 
 const onlyAdminPage = ["/dashboard"];
 const authPage = ["/login", "/register"];
 
-export default async function withAuth(proxy: NextProxy, requireAuth: string[] = []) {
+export default function withAuth(
+  middleware: NextMiddlewareFunction,
+  requireAuth: string[] = []
+) {
   return async (req: NextRequest, next: NextFetchEvent) => {
     const pathname = req.nextUrl.pathname;
 
-    if (requireAuth.includes(pathname)) {
+    if (requireAuth.some((path) => pathname.startsWith(path))) {
       const token = await getToken({
         req,
         secret: process.env.NEXTAUTH_SECRET,
       });
+
       if (!token && !authPage.includes(pathname)) {
         const url = new URL("/login", req.url);
         url.searchParams.set("callbackUrl", encodeURI(req.url));
@@ -29,11 +30,12 @@ export default async function withAuth(proxy: NextProxy, requireAuth: string[] =
           return NextResponse.redirect(new URL("/", req.url));
         }
 
-        if (token.role != "admin" && onlyAdminPage.includes(pathname)) {
+        if (token.role !== "admin" && onlyAdminPage.some((p) => pathname.startsWith(p))) {
           return NextResponse.redirect(new URL("/", req.url));
         }
       }
     }
-    return proxy(req, next);
+
+    return middleware(req, next);
   };
 }
