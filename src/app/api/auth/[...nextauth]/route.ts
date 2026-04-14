@@ -1,16 +1,14 @@
 import { login, loginWithGoogle } from "@/lib/firebase/service";
 import { compare } from "bcrypt";
-import NextAuth from "next-auth";
-import Credentials from "next-auth/providers/credentials";
-import Google from "next-auth/providers/google";
+import NextAuth, { NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 
-const { handlers, auth, signIn, signOut } = NextAuth({
-  session: {
-    strategy: "jwt",
-  },
+const authOptions: NextAuthOptions = {
+  session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
-    Credentials({
+    CredentialsProvider({
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
@@ -23,15 +21,15 @@ const { handlers, auth, signIn, signOut } = NextAuth({
         };
         const user: any = await login({ email });
         if (user) {
-          const passwordConfirm = await compare(password as string, user.password);
-          if (passwordConfirm) return user;
+          const ok = await compare(password, user.password);
+          if (ok) return user;
         }
         return null;
       },
     }),
-    Google({
-      clientId: process.env.GOOGLE_OAUTH_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET!,
+    GoogleProvider({
+      clientId: process.env.GOOGLE_OAUTH_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET || "",
     }),
   ],
   callbacks: {
@@ -42,28 +40,23 @@ const { handlers, auth, signIn, signOut } = NextAuth({
         token.role = user.role;
         return token;
       }
-
       if (account?.provider === "google") {
         const data = {
           fullname: profile?.name || user.name,
           email: profile?.email || user.email,
           type: "google",
         };
-
         const result = await new Promise<{ status: boolean; data: any }>((resolve) => {
-          loginWithGoogle(data, (response: any) => resolve(response));
+          loginWithGoogle(data, (res: any) => resolve(res));
         });
-
         if (result.status) {
           token.email = result.data.email;
           token.fullname = result.data.fullname;
           token.role = result.data.role;
         }
       }
-
       return token;
     },
-
     async session({ session, token }: any) {
       if ("email" in token) session.user.email = token.email;
       if ("fullname" in token) session.user.fullname = token.fullname;
@@ -71,9 +64,8 @@ const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
   },
-  pages: {
-    signIn: "/login",
-  },
-});
+  pages: { signIn: "/login" },
+};
 
-export { handlers as GET, handlers as POST };
+const handler = NextAuth(authOptions);
+export { handler as GET, handler as POST };
