@@ -14,11 +14,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: string;
           password: string;
         };
+
         const user: any = await login({ email });
+
         if (user) {
           const valid = await compare(password, user.password);
           if (valid) return user;
         }
+
         return null;
       },
     }),
@@ -34,23 +37,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.fullname = user.fullname || user.name;
         token.role = user.role;
       }
+
       if (account?.provider === "google") {
         const data = {
-          fullname: profile?.name || user.name,
-          email: profile?.email || user.email,
+          fullname: profile?.name || user?.name,
+          email: profile?.email || user?.email,
           type: "google",
         };
-        const result = await new Promise<any>((resolve) => {
-          loginWithGoogle(data, (response: any) => resolve(response));
-        });
+
+        const result = await loginWithGoogle(data);
+
         if (result.status) {
           token.email = result.data.email;
           token.fullname = result.data.fullname;
           token.role = result.data.role;
         }
       }
+
       return token;
     },
+
     async session({ session, token }: any) {
       if ("email" in token) session.user.email = token.email;
       if ("fullname" in token) session.user.fullname = token.fullname;

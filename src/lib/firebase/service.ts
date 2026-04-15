@@ -1,33 +1,18 @@
-import {
-  addDoc,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  getFirestore,
-  query,
-  updateDoc,
-  where,
-} from "firebase/firestore";
-import app from "./init";
+import { getFirestore } from "firebase-admin/firestore";
+import { db } from "./admin";
 import bcrypt from "bcrypt";
 
-const firestore = getFirestore(app);
-
 export async function retrieveData(collectionName: string) {
-  const snapshot = await getDocs(collection(firestore, collectionName));
-  const data = snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
+  const snapshot = await db.collection(collectionName).get();
+  return snapshot.docs.map((d: any) => ({
+    id: d.id,
+    ...d.data(),
   }));
-
-  return data;
 }
 
 export async function retrieveDataById(collectionName: string, id: string) {
-  const snapshot = await getDoc(doc(firestore, collectionName, id));
-  const data = snapshot.data();
-  return data;
+  const snapshot = await db.collection(collectionName).doc(id).get();
+  return snapshot.data();
 }
 
 export async function register(data: {
@@ -36,70 +21,51 @@ export async function register(data: {
   password: string;
   role?: string;
 }) {
-  const q = query(
-    collection(firestore, "users"),
-    where("email", "==", data.email),
-  );
-  const snapshot = await getDocs(q);
-  const users = snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
+  const snapshot = await db
+    .collection("users")
+    .where("email", "==", data.email)
+    .get();
 
-  if (users.length > 0) {
+  if (!snapshot.empty) {
     return { status: false, statusCode: 400, message: "*Email already exist" };
-  } else {
-    data.role = "admin";
-    data.password = await bcrypt.hash(data.password, 10);
-    try {
-      await addDoc(collection(firestore, "users"), data);
-      return { status: true, statusCode: 200, message: "Register Success" };
-    } catch (error) {
-      return { status: false, statusCode: 400, message: "Register Failed" };
-    }
   }
+
+  const hashedPassword = await bcrypt.hash(data.password, 10);
+  await db.collection("users").add({
+    ...data,
+    role: "admin",
+    password: hashedPassword,
+  });
+
+  return { status: true, statusCode: 200, message: "Register Success" };
 }
 
 export async function login(data: { email: string }) {
-  const q = query(
-    collection(firestore, "users"),
-    where("email", "==", data.email),
-  );
+  const snapshot = await db
+    .collection("users")
+    .where("email", "==", data.email)
+    .get();
 
-  const snapshot = await getDocs(q);
-  const user = snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
+  if (snapshot.empty) return null;
 
-  if (user.length > 0) {
-    return user[0];
-  } else {
-    return null;
-  }
+  const doc = snapshot.docs[0];
+  return { id: doc.id, ...doc.data() };
 }
 
-export async function loginWithGoogle(data: any, callback: any) {
-  const q = query(
-    collection(firestore, "users"),
-    where("email", "==", data.email),
-  );
+export async function loginWithGoogle(data: any) {
+  const snapshot = await db
+    .collection("users")
+    .where("email", "==", data.email)
+    .get();
 
-  const snapshot = await getDocs(q);
-  const user: any = snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
-
-  if (user.length > 0) {
-    data.role = user[0].role;
-    await updateDoc(doc(firestore, "users", user[0].id), data).then(() => {
-      callback({ status: true, data: data });
-    });
-  } else {
-    data.role = "member";
-    await addDoc(collection(firestore, "users"), data).then(() => {
-      callback({ status: true, data: data });
-    });
+  if (!snapshot.empty) {
+    const docUser = snapshot.docs[0];
+    data.role = docUser.data().role;
+    await db.collection("users").doc(docUser.id).update(data);
+    return { status: true, data };
   }
+
+  data.role = "member";
+  await db.collection("users").add(data);
+  return { status: true, data };
 }

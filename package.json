@@ -21,6 +21,7 @@
     "eslint": "9.39.4",
     "eslint-config-next": "^15.5.13",
     "firebase": "^12.11.0",
+    "firebase-admin": "^13.8.0",
     "mext": "^0.0.60",
     "next": "^16.2.3",
     "next-auth": "^5.0.0-beta.30",
