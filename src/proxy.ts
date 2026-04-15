@@ -6,13 +6,14 @@ function mainProxy(request: NextRequest) {
   return NextResponse.next();
 }
 
-export const proxy = withAuth(mainProxy, [
+const proxy = withAuth(mainProxy, [
   "/dashboard",
   "/profile",
   "/login",
   "/register",
 ]);
 
+export { proxy };
 export default proxy;
 
 export const config = {

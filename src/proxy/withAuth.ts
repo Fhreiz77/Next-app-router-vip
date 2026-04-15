@@ -21,7 +21,7 @@ export default function withAuth(
 
       if (!token && !authPage.includes(pathname)) {
         const url = new URL("/login", req.url);
-        url.searchParams.set("callbackUrl", encodeURI(req.url));
+        url.searchParams.set("callbackUrl", req.url);
         return NextResponse.redirect(url);
       }
 
