@@ -1,21 +1,37 @@
-import withAuth from "./proxy/withAuth";
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
+import { NextRequest, NextResponse } from "next/server";
 
-function mainProxy(request: NextRequest) {
+const onlyAdminPage = ["/dashboard"];
+const authPage = ["/login", "/register"];
+
+export async function proxy(req: NextRequest) {
+  const pathname = req.nextUrl.pathname;
+
+  const isProtected = onlyAdminPage.some((p) => pathname.startsWith(p));
+  const isAuthPage = authPage.includes(pathname);
+
+  const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
+
+  if (!token && (isProtected || isAuthPage)) {
+    const url = new URL("/login", req.url);
+    url.searchParams.set("callbackUrl", req.url);
+    return NextResponse.redirect(url);
+  }
+
+  if (token && isAuthPage) {
+    return NextResponse.redirect(new URL("/", req.url));
+  }
+
+  if (token && token.role !== "admin" && isProtected) {
+    return NextResponse.redirect(new URL("/", req.url));
+  }
+
   return NextResponse.next();
 }
 
-const proxy = withAuth(mainProxy, [
-  "/dashboard",
-  "/profile",
-  "/login",
-  "/register",
-]);
-
-export { proxy };
-export default proxy;
-
 export const config = {
-  matcher: ["/dashboard/:path*", "/profile/:path*", "/login", "/register"],
+  matcher: ["/dashboard/:path*", "/login", "/register"],
 };
