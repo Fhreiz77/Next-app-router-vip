@@ -1,41 +1,26 @@
+import { NextResponse, type NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 
-type NextMiddlewareFunction = (req: NextRequest, next: NextFetchEvent) => any;
+export async function proxy(req: NextRequest) {
+  const pathname = req.nextUrl.pathname;
+  const token = await getToken({
+    req,
+    secret: process.env.AUTH_SECRET,
+  });
 
-const onlyAdminPage = ["/dashboard"];
-const authPage = ["/login", "/register"];
+  if (!token && pathname.startsWith("/dashboard")) {
+    const url = new URL("/login", req.url);
+    url.searchParams.set("callbackUrl", req.url);
+    return NextResponse.redirect(url);
+  }
 
-export default function withAuth(
-  middleware: NextMiddlewareFunction,
-  requireAuth: string[] = []
-) {
-  return async (req: NextRequest, next: NextFetchEvent) => {
-    const pathname = req.nextUrl.pathname;
+  if (token && (pathname === "/login" || pathname === "/register")) {
+    return NextResponse.redirect(new URL("/", req.url));
+  }
 
-    if (requireAuth.some((path) => pathname.startsWith(path))) {
-      const token = await getToken({
-        req,
-        secret: process.env.AUTH_SECRET,
-      });
-
-      if (!token && !authPage.includes(pathname)) {
-        const url = new URL("/login", req.url);
-        url.searchParams.set("callbackUrl", req.url);
-        return NextResponse.redirect(url);
-      }
-
-      if (token) {
-        if (authPage.includes(pathname)) {
-          return NextResponse.redirect(new URL("/", req.url));
-        }
-
-        if (token.role !== "admin" && onlyAdminPage.some((p) => pathname.startsWith(p))) {
-          return NextResponse.redirect(new URL("/", req.url));
-        }
-      }
-    }
-
-    return middleware(req, next);
-  };
+  return NextResponse.next();
 }
+
+export const config = {
+  matcher: ["/dashboard/:path*", "/login", "/register"],
+};
