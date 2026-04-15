@@ -16,7 +16,7 @@ export default function withAuth(
     if (requireAuth.some((path) => pathname.startsWith(path))) {
       const token = await getToken({
         req,
-        secret: process.env.NEXTAUTH_SECRET,
+        secret: process.env.AUTH_SECRET,
       });
 
       if (!token && !authPage.includes(pathname)) {

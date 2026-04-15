@@ -1,31 +1,27 @@
+import { NextResponse, type NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { NextRequest, NextResponse } from "next/server";
-
-const onlyAdminPage = ["/dashboard"];
-const authPage = ["/login", "/register"];
 
 export async function proxy(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
-
-  const isProtected = onlyAdminPage.some((p) => pathname.startsWith(p));
-  const isAuthPage = authPage.includes(pathname);
+  const authPage = ["/login", "/register"];
+  const adminPage = ["/dashboard"];
 
   const token = await getToken({
     req,
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: process.env.AUTH_SECRET,
   });
 
-  if (!token && (isProtected || isAuthPage)) {
+  if (!token && adminPage.some((p) => pathname.startsWith(p))) {
     const url = new URL("/login", req.url);
     url.searchParams.set("callbackUrl", req.url);
     return NextResponse.redirect(url);
   }
 
-  if (token && isAuthPage) {
+  if (token && authPage.includes(pathname)) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
-  if (token && token.role !== "admin" && isProtected) {
+  if (token && token.role !== "admin" && pathname.startsWith("/dashboard")) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
