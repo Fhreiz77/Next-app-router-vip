@@ -1,21 +1,18 @@
+
 import withAuth from "./proxy/withAuth";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function mainProxy(request: NextRequest) {
-  const res = NextResponse.next();
-  return res;
+export function proxy(request: NextRequest) {
+  return NextResponse.next();
 }
 
-const proxy = withAuth(mainProxy, [
+export default withAuth(proxy, [
   "/dashboard",
   "/profile",
   "/login",
   "/register",
 ]);
-
-export { proxy };      
-export default proxy; 
 
 export const config = {
   matcher: ["/dashboard/:path*", "/profile/:path*", "/login", "/register"],
