@@ -53,8 +53,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const result = await loginWithGoogle(data);
 
           if (result.status) {
-            token.email = result.data.email;
-            token.fullname = result.data.fullname || profile?.name || user?.name;
+            token.email = result.data.email || profile?.email || user?.email;
+            token.fullname =
+              result.data.fullname || profile?.name || user?.name;
             token.role = result.data.role;
             console.log("[Google] token set:", token.email, token.role);
           } else {
