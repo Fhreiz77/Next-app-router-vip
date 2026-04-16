@@ -41,7 +41,7 @@ export default function ProductPage(props: ProductPageProps) {
 
             <div>
               <h5 className="text-xl text-heading font-semibold tracking-tight truncate">
-                {product.name}
+                {product.title}
               </h5>
 
               <div className="flex items-center justify-between mt-3">
