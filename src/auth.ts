@@ -63,6 +63,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }
         } catch (err: any) {
           console.error("[Google] Firebase ERROR:", err.message);
+          token.email = profile?.email || user?.email;
+          token.fullname = profile?.name || user?.name; 
+          token.role = "member";
         }
       }
 
