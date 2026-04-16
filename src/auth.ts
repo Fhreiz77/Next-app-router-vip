@@ -46,14 +46,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           type: "google",
         };
 
-        console.log("Google data:", data);
-        const result = await loginWithGoogle(data);
-        console.log("loginWithGoogle result:", result);
+        console.log("[Google] data:", JSON.stringify(data));
 
-        if (result.status) {
-          token.email = result.data.email;
-          token.fullname = result.data.fullname;
-          token.role = result.data.role;
+        try {
+          const result = await loginWithGoogle(data);
+          console.log("[Google] result:", JSON.stringify(result));
+
+          if (result.status) {
+            token.email = result.data.email;
+            token.fullname = result.data.fullname;
+            token.role = result.data.role;
+            console.log("[Google] token set:", token.email, token.role);
+          } else {
+            console.log("[Google] loginWithGoogle returned false status");
+          }
+        } catch (err: any) {
+          console.error("[Google] Firebase ERROR:", err.message); 
         }
       }
 
