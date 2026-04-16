@@ -32,6 +32,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async jwt({ token, account, profile, user }: any) {
+      console.log("[JWT] account?.provider:", account?.provider);
       if (account?.provider === "credentials") {
         token.email = user.email;
         token.fullname = user.fullname || user.name;

@@ -99,7 +99,7 @@ export default function LoginPage({ searchParams }: any) {
           <hr />
           <button
           type="button"
-            onClick={() => signIn("google", { callbackUrl, redirect: false })}
+            onClick={() => signIn("google", { callbackUrl })}
             className="w-full text-white bg-cyan-700 hover:bg-cyan-800 focus:ring-4 focus:ring-cyan-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-800"
           >
             Login with Google
