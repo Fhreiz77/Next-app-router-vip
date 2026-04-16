@@ -6,7 +6,7 @@ import Google from "next-auth/providers/google";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.AUTH_SECRET,
   providers: [
     Credentials({
       async authorize(credentials) {
@@ -26,8 +26,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
     Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientId: process.env.AUTH_GOOGLE_ID,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET,
     }),
   ],
   callbacks: {
@@ -45,7 +45,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           type: "google",
         };
 
+        console.log("Google data:", data);
         const result = await loginWithGoogle(data);
+        console.log("loginWithGoogle result:", result);
 
         if (result.status) {
           token.email = result.data.email;
