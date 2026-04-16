@@ -54,7 +54,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
           if (result.status) {
             token.email = result.data.email;
-            token.fullname = result.data.fullname;
+            token.fullname = result.data.fullname || profile.name;
             token.role = result.data.role;
             console.log("[Google] token set:", token.email, token.role);
           } else {
